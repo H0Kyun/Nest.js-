@@ -1,51 +1,56 @@
 import { Injectable } from '@nestjs/common';
-import { Board, BoardStatus } from './boards.model';
-import { v1 as uuid } from 'uuid';
+import { BoardStatus } from './enum/board-status.enum';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { NotFoundException } from '@nestjs/common';
-import { BoardDAO } from './boards.database';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Board } from 'src/boards/board.entity';
+import { Repository } from 'typeorm';
+import { BadRequestException } from '@nestjs/common';
 
 @Injectable()
 export class BoardsService {
-  constructor(private boardsDAO: BoardDAO) {}
+  constructor(
+    @InjectRepository(Board)
+    private boardRepository: Repository<Board>,
+  ) {}
 
-  private boards: Board[] = [];
-
-  getAllBoards(): Board[] {
-    return this.boards;
+  async getAllBoards() {
+    return await this.boardRepository.find();
   }
 
-  getBoardById(id: string) {
-    const found = this.boards.find((board) => board.id === id);
+  getBoardById(id: number) {
+    const found = this.boardRepository.findOneBy({ id });
     if (!found) {
-      throw new NotFoundException();
+      throw new NotFoundException('없음');
     }
-
     return found;
   }
 
-  createBoard(createBoardDto: CreateBoardDto) {
-    // const { title, description, status } = createBoardDto;
-    // const board: Board = {
-    //   id: uuid(),
-    //   title,
-    //   description,
-    //   status,
-    // };
+  async createBoard(createBoardDto: CreateBoardDto) {
+    const board = this.boardRepository.create({
+      title: createBoardDto.title,
+      description: createBoardDto.description,
+      status: createBoardDto.status,
+    });
 
-    return this.boardsDAO.createBoard(createBoardDto);
+    return await this.boardRepository
+      .save(board)
+      .then((board) => board)
+      .catch((e) => {
+        throw new BadRequestException();
+      });
   }
 
-  deleteBoard(id: string) {
-    this.boards.filter((board) => board.id !== id);
+  deleteBoard(id: number) {
+    this.boardRepository.delete(id);
   }
 
-  updateBoardService(id: string) {
+  updateBoardService(id: number) {
     const board = this.getBoardById(id);
-    board.status =
-      board.status == BoardStatus.PRIVATE
-        ? BoardStatus.PUBLIC
-        : BoardStatus.PRIVATE;
+    // board.status =
+    //   board.status == BoardStatus.PRIVATE
+    //     ? BoardStatus.PUBLIC
+    //     : BoardStatus.PRIVATE;
     return board;
   }
 }
