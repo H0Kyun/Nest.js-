@@ -4,7 +4,7 @@ import {
   Injectable,
   PipeTransform,
 } from '@nestjs/common';
-import { BoardStatus } from '../boards.model';
+import { BoardStatus } from '../enum/board-status.enum';
 
 @Injectable()
 export class BoardStatusValidationPipe implements PipeTransform {

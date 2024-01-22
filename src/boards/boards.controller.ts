@@ -1,7 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { BoardsService } from './boards.service';
 import { Get } from '@nestjs/common';
-import { Board, BoardStatus } from './boards.model';
+import { BoardStatus } from './enum/board-status.enum';
 import { Post } from '@nestjs/common';
 import { Body } from '@nestjs/common';
 import { CreateBoardDto } from './dto/create-board.dto';
@@ -17,13 +17,12 @@ export class BoardsController {
   constructor(private boardsService: BoardsService) {}
 
   @Get()
-  getAllBoards(): Board[] {
+  getAllBoards() {
     return this.boardsService.getAllBoards();
   }
 
   @Get('/:id')
-  getBaordById(@Param('id') id: string) {
-    console.log(id);
+  getBaordById(@Param('id') id: number) {
     return this.boardsService.getBoardById(id);
   }
 
@@ -32,17 +31,16 @@ export class BoardsController {
   createBoard(
     @Body(new BoardStatusValidationPipe()) createBoardDto: CreateBoardDto,
   ) {
-    console.log(createBoardDto);
     return this.boardsService.createBoard(createBoardDto);
   }
 
   @Delete('/:id')
-  deleteBoard(@Param('id') id: string) {
+  deleteBoard(@Param('id') id: number) {
     this.boardsService.deleteBoard(id);
   }
 
   @Patch('/:id')
-  updateBoardStatus(@Param('id') id: string) {
+  updateBoardStatus(@Param('id') id: number) {
     this.boardsService.updateBoardService(id);
   }
 }
